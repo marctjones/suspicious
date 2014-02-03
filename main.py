@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/python
 from optparse import OptionParser
 import os
 import re
@@ -6,6 +6,7 @@ report = {}
 wordscore = {}
 filescore = {}
 filelist = list()
+skipped = 0
 
 def sortscore(score, reverse=False):
 	sortedscore = sorted(score.items(), key=lambda score: score[1], reverse=reverse)
@@ -51,13 +52,17 @@ parser = OptionParser()
 parser.add_option("-f", "--file", dest="suspiciousfilename", help="specify file to scan", action="append")
 parser.add_option("-w", "--wordlist", dest="wordlistfilename", help="file containing all of the words to look for")
 parser.add_option("-s", "--skip", dest="skipfileextensions", help="file extensions to skip", action="append")
-parser.add_option("-v", "--verbose", dest="verbose", help="print verberose information", default=False)
+parser.add_option("-v", "--verbose", dest="verbose", help="print verberose information", default=False, action="store_true")
 parser.add_option("-r", "--report", dest="printreport", default="w", help="print score")
+parser.add_option("--show-wordlist", dest="show_wordlist", default=False, help="print list of words to detect", action="store_true")
+parser.add_option("-c", "--display-counts", dest="display_counts", default=False, help="Show the num ber of files processed", action="store_true")
 
 (options, args) = parser.parse_args()
 
 if options.wordlistfilename:
-	wordlist = open(options.wordlistfilename).read().lower().split()
+	wordlist = open(options.wordlistfilename).read().lower().strip().split('\n')
+			
+if options.show_wordlist: print wordlist; exit()
 
 for a in args:
 	for (path, dirs, files) in os.walk(a):
@@ -69,7 +74,7 @@ if options.suspiciousfilename:
 
 for file in filelist:
 	if skipfile(file, options.skipfileextensions):
-		#print "skip: " + file
+		skipped += 1
 		continue
 	try:
 		f = open(file)
@@ -93,9 +98,21 @@ for file in report.keys():
 if options.printreport:
 	if options.printreport == "f":
 		printscore(sortscore(filescore))
+	elif options.printreport == "wf" or options.printreport == "fw":
+		for file in sortscore(filescore):
+			print file[0] + '(' + str(file[1]) + '):',
+			for word in report[file[0]].keys():
+				if report[file[0]][word] > 0:
+					print word + '(' + str(report[file[0]][word]) + ');', 
+			print ""
 	else:
 		printscore(sortscore(wordscore))
 
+if options.display_counts:
+	print "total files: " + str(len(filelist)) ,
+	print "suspicious files: " + str(len(sortscore(filescore))) ,
+	print "skipped files: " + str(skipped)
+ 
 def test():
 	print wholeword("ear","bearth")
 	print wholeword("ear","BearTH")

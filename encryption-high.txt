@@ -1,3 +1,4 @@
+sasl
 blowfish
 cast-128
 cast 128
@@ -102,7 +103,6 @@ ipsec
 BassOmatic
 pskc
 pkcs
-
 ocb
 ccm
 cwc
@@ -195,6 +195,11 @@ key length
 key expansion
 round key
 aes-192
-
 sbox
 openssl
+url
+443
+22
+8443
+ldaps
+636
