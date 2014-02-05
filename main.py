@@ -1,5 +1,4 @@
 #!/usr/bin/python
-#example command
 
 from optparse import OptionParser
 import os
@@ -121,6 +120,7 @@ parser.add_option("-p", "--display_progress", dest="display_progress", default=F
 parser.add_option("-l", "--max-wholeword-length", dest="maxwholewordlength", type="int", default=-1, help="maximun length of a word allowed to only find matches on whole word")
 parser.add_option("-o", "--summary-file", dest="summaryfile", help="name of the file to store the summary in")
 parser.add_option("-x", "--display-summary", dest="displaysummary", default=False, help="Display a summary from the summary file", action="store_true")
+parser.add_option("-X", "--dont-display-summary", dest="dontdisplaysummary", default=False, help="Dont Display a summary after running a scan", action="store_true")
 
 (options, args) = parser.parse_args()
 
@@ -213,7 +213,7 @@ for file in filelist:
 if options.display_progress: 
 	print '\r' + " " * len(progresstext) + '\r',
 
-if options.printreport:
+if options.printreport and not options.dontdisplaysummary:
 	if options.printreport == "f":
 		printscore(sortscore(scorefile(report)))
 	elif options.printreport == "wf" or options.printreport == "fw":
@@ -230,13 +230,19 @@ if options.display_counts:
 
 if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
 	summaryfilename = options.summaryfile	
-	counter = None
+	counter = 0
 	while os.path.isfile(summaryfilename):
 		counter +=1
 		summaryfilename = options.summaryfile + '.' + str(counter)
-	summaryfile = open(summaryfilename, 'w+')
-	summaryfile.write(summary(report))
-	summaryfile.close()
+	try:
+		if counter > 1: print "saving as " + summaryfilename + "...."	
+		summaryfile = open(summaryfilename, 'w+')
+		summaryfile.write(summary(report))
+		summaryfile.close()		
+	except:
+		print report
+		print "error saving summary as " + summaryfilename
+
 
 def test():
 	print wholeword("22", "port22")
