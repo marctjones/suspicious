@@ -27,37 +27,6 @@ def printscore(report):
 	for i in report:
 		print i[0] + ':' + str(i[1])
 
-def scorewords(report):
-	for file in report.keys():
-		for word in report[file].keys():
-			if not word in wordscore:
-				wordscore[word] = 0
-			if not file in filescore:
-				filescore[file] = 0
-			wordscore[word] += report[file][word]
-	return wordscore
-
-def scorefile(report):
-	for file in report.keys():
-		for word in report[file].keys():
-			if not word in wordscore:
-				wordscore[word] = 0
-			if not file in filescore:
-				filescore[file] = 0
-			filescore[file] += report[file][word]
-	return filescore
-
-def summary(report):
-	filescore = scorefile(report)
-	text = ""
-	for file in sortscore(filescore):
-		text += file[0] + '(' + str(file[1]) + '):'
-		for word in report[file[0]].keys():
-			if report[file[0]][word] > 0:
-				text += word + '(' + str(report[file[0]][word]) + ');' 
-		text += '\n'
-	return text
-
 def wholeword(word, string):
 	re.purge()
 	matches = []
@@ -109,33 +78,6 @@ if options.wordlistfilename:
 			
 if options.show_wordlist: print wordlist; exit()
 
-if options.displaysummary and options.summaryfile
-	report = dict()
-	try:
-		summaryfile = open(options.summaryfile)
-	except:
-		print "no summary file: " + options.summaryfile
-		exit()
-	#sample input
-	#../bzr.lf/lsb/devel/build_env/headers/x86-64/4.1/glib-2.0/gio/gmenuexporter.h.defs(1): export(1);
-	for line in summaryfile:
-		#find the file name which is before the matching parathsis before the last colon on the line
-		filename = line[:line[:line.rfind(':')].rfind('(')]
-		#find the total number of words found by locating the end of the filename and taking the number in parathesis right before the :
-		totalfilecount = line[line[:line.rfind(':')].rfind('(')+1:line[:line.rfind(':')].rfind(')')]
-		#find the list of words following the :, and split them by the ;, and then drop the last item on the list which is always a \n
-		foundwords = line[line.rfind(':')+1:].split(';')[:-1]
-		report[filename] = dict()		
-		for w in foundwords:
-			w = w.strip()
-			word = w[:w.find('(')]
-			wcount = w[w.find('(')+1:w.find(')')]		
-			report[filename][word] = wcount
-
-	print summary(report)
-	exit()
-
-
 for a in args:
 	#filelist.append(a)
 	for (path, dirs, files) in os.walk(a):
@@ -155,6 +97,9 @@ for a in args:
 	
 if options.suspiciousfilename:
 	filelist += options.suspiciousfilename
+
+if options.summaryfile:
+	summaryfile = open(summaryfile, 'w')
 
 start = datetime.datetime.now()
 for file in filelist:
@@ -183,6 +128,36 @@ for file in filelist:
 		report[file][k] = filenamescore[k] + filecontentsscore[k]
 
 
+def scorewords(report):
+	for file in report.keys():
+		for word in report[file].keys():
+			if not word in wordscore:
+				wordscore[word] = 0
+			if not file in filescore:
+				filescore[file] = 0
+			wordscore[word] += report[file][word]
+	return wordscore
+
+def scorefile(report):
+	for file in report.keys():
+		for word in report[file].keys():
+			if not word in wordscore:
+				wordscore[word] = 0
+			if not file in filescore:
+				filescore[file] = 0
+			filescore[file] += report[file][word]
+	return filescore
+
+def summary(report):
+	filescore = scorefile(report)
+	text = ""
+	for file in sortscore(filescore):
+		text += file[0] + '(' + str(file[1]) + '):'
+		for word in report[file[0]].keys():
+			if report[file[0]][word] > 0:
+				text += word + '(' + str(report[file[0]][word]) + ');' 
+		text += '\n'
+	return text
 
 if options.printreport:
 	if options.printreport == "f":
@@ -198,17 +173,7 @@ if options.display_counts:
 	print "skipped files:" + str(skipped) ,
 	print "searched:" + str(datasize) + 'B', 
 	print "time:" + str(datetime.datetime.now() - start).split('.')[0]
-
-if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
-	summaryfilename = options.summaryfile	
-	counter = None
-	while os.path.isfile(summaryfilename)
-		counter +=1
-		summaryfilename = options.summaryfile + '.' + str(counter)
-	summaryfile = open(summaryfile, 'w+')
-	summaryfile.write(summary(report))
-	summaryfile.close()
-
+ 
 def test():
 	print wholeword("ear","bearth")
 	print wholeword("ear","BearTH")
