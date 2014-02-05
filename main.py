@@ -1,4 +1,6 @@
 #!/usr/bin/python
+#example command
+
 from optparse import OptionParser
 import os
 import re
@@ -61,15 +63,23 @@ def summary(report):
 def wholeword(word, string):
 	re.purge()
 	matches = []
-	regexU = r'([A-Z]|[^a-zA-Z]|\b)(' + re.escape(word.lower()) + r')([A-Z]|[^a-zA-Z]|\b)'
-	regexL = r'([a-z]|[^a-zA-Z]|\b)(' + re.escape(word.upper()) + r')([a-z]|[^a-zA-Z]|\b)'
-	mU = re.search(regexU, string)
-	if "groups" in dir(mU):
-		matches.append(mU.groups())
-	re.purge()
-	mL = re.search(regexL, string)
-	if "groups" in dir(mL):
-		matches.append(mL.groups())
+	
+	try int(word):
+		regexNum = r'([^0-9]|\b)(' + word + r')([^0-9]|\b)'
+		m = re.search(regexNum, string)
+		if "groups" in dir(mU):
+			matches.append(mU.groups())
+	
+	except ValueError:
+		regexU = r'([A-Z]|[^a-zA-Z]|\b)(' + re.escape(word.lower()) + r')([A-Z]|[^a-zA-Z]|\b)'
+		regexL = r'([a-z]|[^a-zA-Z]|\b)(' + re.escape(word.upper()) + r')([a-z]|[^a-zA-Z]|\b)'
+		mU = re.search(regexU, string)
+		if "groups" in dir(mU):
+			matches.append(mU.groups())
+		re.purge()
+		mL = re.search(regexL, string)
+		if "groups" in dir(mL):
+			matches.append(mL.groups())
 	return matches
 
 def skipfile(filename,skippedexts):
@@ -89,12 +99,14 @@ def scoretext(wordlist, text, maxwholewordlen = -1):
 			score[word] = len(wholeword(word,text))
 	return score
 
-parser = OptionParser()
+usage = "%prog [options] DIRECTORY ... DIRECTORYN"
+epilog = "example: ./main.py ../git.lf/janitor -s .ppt -s .docx -s .pdf -s .xls -s .xlsx -s .gif -s .png -s .jpg -s .css -r fw -w cryptology.txt -c -p -l 3"
+parser = OptionParser(usage = usage, epilog = epilog)
 parser.add_option("-f", "--file", dest="suspiciousfilename", help="specify file to scan", action="append")
 parser.add_option("-w", "--wordlist", dest="wordlistfilename", help="file containing all of the words to look for")
 parser.add_option("-s", "--skip", dest="skipfileextensions", help="file extensions to skip", action="append")
 parser.add_option("-v", "--verbose", dest="verbose", help="print verberose information", default=False, action="store_true")
-parser.add_option("-r", "--report", dest="printreport", default="w", help="print score")
+parser.add_option("-r", "--report", dest="printreport", default="wf", help="print score")
 parser.add_option("--show-wordlist", dest="show_wordlist", default=False, help="print list of words to detect", action="store_true")
 parser.add_option("-c", "--display-counts", dest="display_counts", default=False, help="Show the num ber of files processed", action="store_true")
 parser.add_option("-p", "--display_progress", dest="display_progress", default=False, help="show percentage complete", action="store_true")
@@ -109,7 +121,7 @@ if options.wordlistfilename:
 			
 if options.show_wordlist: print wordlist; exit()
 
-if options.displaysummary and options.summaryfile
+if options.displaysummary and options.summaryfile:
 	report = dict()
 	try:
 		summaryfile = open(options.summaryfile)
@@ -130,9 +142,17 @@ if options.displaysummary and options.summaryfile
 			w = w.strip()
 			word = w[:w.find('(')]
 			wcount = w[w.find('(')+1:w.find(')')]		
-			report[filename][word] = wcount
+			report[filename][word] = int(wcount)
 
-	print summary(report)
+	if options.printreport:
+		if options.printreport == "f":
+			printscore(sortscore(scorefile(report)))
+		elif options.printreport == "w":
+			printscore(sortscore(scorewords(report)))
+		elif options.printreport == "wf" or options.printreport == "fw":
+			print summary(report)			
+	else:
+		print summary(report)
 	exit()
 
 
@@ -202,7 +222,7 @@ if options.display_counts:
 if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
 	summaryfilename = options.summaryfile	
 	counter = None
-	while os.path.isfile(summaryfilename)
+	while os.path.isfile(summaryfilename):
 		counter +=1
 		summaryfilename = options.summaryfile + '.' + str(counter)
 	summaryfile = open(summaryfile, 'w+')
