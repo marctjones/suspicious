@@ -64,11 +64,12 @@ def wholeword(word, string):
 	re.purge()
 	matches = []
 	
-	try int(word):
+	try:
+		int(word)
 		regexNum = r'([^0-9]|\b)(' + word + r')([^0-9]|\b)'
-		m = re.search(regexNum, string)
-		if "groups" in dir(mU):
-			matches.append(mU.groups())
+		mN = re.search(regexNum, string)
+		if "groups" in dir(mN):
+			matches.append(mN.groups())
 	
 	except ValueError:
 		regexU = r'([A-Z]|[^a-zA-Z]|\b)(' + re.escape(word.lower()) + r')([A-Z]|[^a-zA-Z]|\b)'
@@ -230,6 +231,11 @@ if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
 	summaryfile.close()
 
 def test():
+	print wholeword("22", "port22")
+	print wholeword("22", "22")
+	print wholeword("22", ":22'")
+	print wholeword("22", "223")	
+	print wholeword("22", "open('22')")
 	print wholeword("ear","bearth")
 	print wholeword("ear","BearTH")
 	print wholeword("ear","bEARth")

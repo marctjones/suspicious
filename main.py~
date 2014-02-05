@@ -63,15 +63,24 @@ def summary(report):
 def wholeword(word, string):
 	re.purge()
 	matches = []
-	regexU = r'([A-Z]|[^a-zA-Z]|\b)(' + re.escape(word.lower()) + r')([A-Z]|[^a-zA-Z]|\b)'
-	regexL = r'([a-z]|[^a-zA-Z]|\b)(' + re.escape(word.upper()) + r')([a-z]|[^a-zA-Z]|\b)'
-	mU = re.search(regexU, string)
-	if "groups" in dir(mU):
-		matches.append(mU.groups())
-	re.purge()
-	mL = re.search(regexL, string)
-	if "groups" in dir(mL):
-		matches.append(mL.groups())
+	
+	try:
+		int(word)
+		regexNum = r'([^0-9]|\b)(' + word + r')([^0-9]|\b)'
+		mN = re.search(regexNum, string)
+		if "groups" in dir(mN):
+			matches.append(mN.groups())
+	
+	except ValueError:
+		regexU = r'([A-Z]|[^a-zA-Z]|\b)(' + re.escape(word.lower()) + r')([A-Z]|[^a-zA-Z]|\b)'
+		regexL = r'([a-z]|[^a-zA-Z]|\b)(' + re.escape(word.upper()) + r')([a-z]|[^a-zA-Z]|\b)'
+		mU = re.search(regexU, string)
+		if "groups" in dir(mU):
+			matches.append(mU.groups())
+		re.purge()
+		mL = re.search(regexL, string)
+		if "groups" in dir(mL):
+			matches.append(mL.groups())
 	return matches
 
 def skipfile(filename,skippedexts):
@@ -222,6 +231,11 @@ if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
 	summaryfile.close()
 
 def test():
+	print wholeword("22", "port22")
+	print wholeword("22", "22")
+	print wholeword("22", ":22'")
+	print wholeword("22", "223")	
+	print wholeword("22", "open('22')")
 	print wholeword("ear","bearth")
 	print wholeword("ear","BearTH")
 	print wholeword("ear","bEARth")
@@ -232,4 +246,4 @@ def test():
 	print wholeword("ear","ear\n\r")
 	print wholeword("ear","myEAR() MYear: myEAR()")
 
-#test()
+test()
