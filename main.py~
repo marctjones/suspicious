@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import datetime
+import string
 
 report = {}
 wordscore = {}
@@ -64,16 +65,16 @@ def wholeword(word, string):
 	re.purge()
 	matches = []
 	
-	try:
+	if word.isdigit():
 		int(word)
 		regexNum = r'([^0-9]|\b)(' + word + r')([^0-9]|\b)'
 		mN = re.search(regexNum, string)
 		if "groups" in dir(mN):
 			matches.append(mN.groups())
 	
-	except ValueError:
-		regexU = r'([A-Z]|[^a-zA-Z]|\b)(' + re.escape(word.lower()) + r')([A-Z]|[^a-zA-Z]|\b)'
-		regexL = r'([a-z]|[^a-zA-Z]|\b)(' + re.escape(word.upper()) + r')([a-z]|[^a-zA-Z]|\b)'
+	else:
+		regexU = r'([A-Z]|[^a-zA-Z]|\b)(' + word.lower() + r')([A-Z]|[^a-zA-Z]|\b)'
+		regexL = r'([a-z]|[^a-zA-Z]|\b)(' + word.upper() + r')([a-z]|[^a-zA-Z]|\b)'
 		mU = re.search(regexU, string)
 		if "groups" in dir(mU):
 			matches.append(mU.groups())
@@ -94,10 +95,16 @@ def skipfile(filename,skippedexts):
 def scoretext(wordlist, text, maxwholewordlen = -1):
 	score = {}
 	for word in wordlist:
-		if int(len(word)) > int(maxwholewordlen): 
-			score[word] = text.lower().count(word.lower())
+		wordreg = word.replace('-', ' ')
+		wordreg = wordreg.replace(' ', '['+string.punctuation+' ]*')
+		if int(len(word)) > int(maxwholewordlen):
+			matches = [] 
+			m = re.search(wordreg.lower(),text.lower())
+			if "groups" in dir(m):
+				matches.append(m.groups())
+			score[word] = len(matches)			
 		else:
-			score[word] = len(wholeword(word,text))
+			score[word] = len(wholeword(wordreg,text))
 	return score
 
 usage = "%prog [options] DIRECTORY ... DIRECTORYN"
@@ -203,7 +210,8 @@ for file in filelist:
 	for k in filecontentsscore.keys():
 		report[file][k] = filenamescore[k] + filecontentsscore[k]
 
-
+if options.display_progress: 
+	print '\r' + " " * len(progresstext) + '\r',
 
 if options.printreport:
 	if options.printreport == "f":
@@ -215,7 +223,7 @@ if options.printreport:
 
 if options.display_counts:
 	print "total files:" + str(len(filelist)) ,
-	print "suspicious files:" + str(len(sortscore(filescore))) ,
+	print "suspicious files:" + str(len(sortscore(scorefile(report)))) ,
 	print "skipped files:" + str(skipped) ,
 	print "searched:" + str(datasize) + 'B', 
 	print "time:" + str(datetime.datetime.now() - start).split('.')[0]
@@ -246,4 +254,4 @@ def test():
 	print wholeword("ear","ear\n\r")
 	print wholeword("ear","myEAR() MYear: myEAR()")
 
-test()
+#test()
