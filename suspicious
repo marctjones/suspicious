@@ -16,7 +16,7 @@ opened = 0
 datasize = 0
 progresstext = "" 
 
-def sortscore(score, reverse=False):
+def sortscore(score, reverse=True):
 	sortedscore = sorted(score.items(), key=lambda score: score[1], reverse=reverse)
 	returnscore = []
 	for s in sortedscore:
@@ -93,18 +93,37 @@ def skipfile(filename,skippedexts):
 
 def scoretext(wordlist, text, maxwholewordlen = -1):
 	score = {}
+	ltext = text.lower()
 	for word in wordlist:
 		wordreg = word.replace('-', ' ')
-		wordreg = wordreg.replace(' ', '['+string.punctuation+' ]*')
+		wordreg = wordreg.replace(' ', '['+string.punctuation+' ]?')
 		if int(len(word)) > int(maxwholewordlen):
 			matches = [] 
-			m = re.search(wordreg.lower(),text.lower())
+			m = re.search(wordreg.lower(),ltext)
 			if "groups" in dir(m):
 				matches.append(m.groups())
 			score[word] = len(matches)			
 		else:
 			score[word] = len(wholeword(wordreg,text))
 	return score
+
+def optimizewordlist(wordlist, maxwholewordlength):
+	shortwordlist = list()
+	for ww in wordlist:
+		swfound = False
+		
+		for sw in wordlist:
+			if len(sw) <= maxwholewordlength:
+				continue
+			
+			if sw in ww and not sw == ww:
+				swfound = True
+				break
+
+		if not swfound:
+			shortwordlist.append(ww)
+	return shortwordlist 
+
 
 usage = "%prog [options] DIRECTORY ... DIRECTORYN"
 epilog = "example: ./main.py ../git.lf/janitor -s .ppt -s .docx -s .pdf -s .xls -s .xlsx -s .gif -s .png -s .jpg -s .css -r fw -w cryptology.txt -c -p -l 3"
@@ -121,12 +140,14 @@ parser.add_option("-l", "--max-wholeword-length", dest="maxwholewordlength", typ
 parser.add_option("-o", "--summary-file", dest="summaryfile", help="name of the file to store the summary in")
 parser.add_option("-x", "--display-summary", dest="displaysummary", default=False, help="Display a summary from the summary file", action="store_true")
 parser.add_option("-X", "--dont-display-summary", dest="dontdisplaysummary", default=False, help="Dont Display a summary after running a scan", action="store_true")
+parser.add_option("-t", "--test", dest="test", default=False, help="Run internal tests on pattern matching", action="store_true")
 
 (options, args) = parser.parse_args()
 
 if options.wordlistfilename:
 	wordlist = list(set(open(options.wordlistfilename).read().lower().strip().split('\n')))
-			
+	wordlist = optimizewordlist(wordlist, options.maxwholewordlength)
+
 if options.show_wordlist: print wordlist; exit()
 
 if options.displaysummary and options.summaryfile:
@@ -259,5 +280,5 @@ def test():
 	print wholeword("ear","ear:")
 	print wholeword("ear","ear\n\r")
 	print wholeword("ear","myEAR() MYear: myEAR()")
-
+	print wholeword("a5.[0123456789]0","a5-9")
 #test()

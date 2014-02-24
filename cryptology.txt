@@ -1,8 +1,9 @@
 sasl
 blowfish
-cast-128
+cast
 cast 128
-p-array
+cast 128
+p array
 salsa20
 threefish
 rijndael
@@ -19,17 +20,17 @@ cryptography
 cryptographically
 cipher
 ca
-public-key
+public key
 public key
 IDEA
 newdes
 safer
 cas5
 feal
-gost 28147-89
+gost 28147 89
 gost
 skipjack
-des-x
+des x
 gdes
 digitial signature
 plaintext
@@ -37,7 +38,7 @@ ciphertext
 lookup table
 permutation
 cipher
-key-generation
+key generation
 block cipher
 des
 3des
@@ -51,9 +52,10 @@ subkey
 block size
 feistel
 blowfish
-s-box
+s box
 s box
 twofish
+threefish
 key size
 finite field
 key schedule
@@ -67,9 +69,11 @@ digital rights management
 tdea
 triple dea
 tiger
-tiger/128
-tiger/160
+tiger 128
+tiger 160
 openpgp
+pgp
+gpg
 skein
 cubehash
 lucifer
@@ -84,7 +88,7 @@ rc2
 rc6
 clefia
 key whitening
-lai-massey
+lai massey
 lai massey
 p box
 crypto
@@ -93,7 +97,7 @@ blake
 drm
 ofb
 ctr
-s/mime
+s mime
 smime
 elliptic curve
 elliptic
@@ -113,17 +117,17 @@ asymmetric key
 secure hash
 md5
 sha
-sha-1
-sha-224
-sha-256
-sha-384
-sha-512
-cbc-mac
+sha 1
+sha 224
+sha 256
+sha 384
+sha 512
+cbc mac
 cmac
 hmac
 gmac
 secure channel
-diffie-hellman
+diffie hellman
 diffie
 hellman
 dh
@@ -179,13 +183,13 @@ authority
 password
 salt
 padding
-aes-256
-aes-128
+aes 256
+aes 128
 aes
 fips 140
-fips-140
-fips 140-2
-fips-140-2
+fips 140
+fips 140 2
+fips 140 2
 fips 197
 cavp
 whirlpool
@@ -194,7 +198,7 @@ encipher
 key length
 key expansion
 round key
-aes-192
+aes 192
 sbox
 openssl
 url
@@ -234,10 +238,10 @@ rijndael
 block cipher
 nist
 aes
-sha-1
+sha 1
 hmac
-hmac-md5
-hmac-sha1
+hmac md5
+hmac sha1
 trust
 smartcard
 key recovery
@@ -275,17 +279,17 @@ exlusive or
 cipher feeback
 cfb
 output feedback
-56-bit key
-64-bit block
-112-bit key
+56 bit key
+64 bit block
+112 bit key
 fips
-cast-128
+cast 128
 cast 256
 rfc 2144
 rfc 2612
 encryption
 idea
-128-bit key
+128 bit key
 rc1
 rc2
 rfc 2268
@@ -297,7 +301,7 @@ rc6
 blowfish
 twofish
 camellia
-block-cipher
+block cipher
 camellia
 rfc 3713
 ipsec
@@ -320,16 +324,16 @@ sms4
 diffie
 skipjack
 gsm
-a5/1
-a5/2
-a5/3
+a5 1
+a5 2
+a5 3
 gprs
-gea/0
-gea/1
-gea/2
-gea/3
-gea/4
-kcipher-2
+gea 0
+gea 1
+gea 2
+gea 3
+gea 4
+kcipher 2
 rfc 7008
 hellman
 trap door
@@ -338,8 +342,8 @@ bob
 eve
 rsa
 dh
-d-h
-diffie-hellman
+d h
+diffie hellman
 dsa
 elgamal
 elliptic curve
@@ -347,7 +351,7 @@ ecc
 ecdsa
 pkcs
 rfc 6090
-public-key
+public key
 rfc 3447
 rfc 2898
 x509
@@ -361,14 +365,14 @@ cert
 rfc 2986
 personal information exchange
 pseudorandom
-cramer-shoup
+cramer shoup
 kea
 key exchange algorithm
 key exchange
 luc
 merkle
 hash
-one-way encryption
+one way encryption
 md2
 rfc 1319
 md4
@@ -377,22 +381,22 @@ rfc 6150
 md5
 rfc 1321
 sha
-sha-1
+sha 1
 fips
 rfc 3174
-sha-224
-sha-256
-sha-384
-sha-512
-sha-1
-sha-3
+sha 224
+sha 256
+sha 384
+sha 512
+sha 1
+sha 3
 ripemd
 rfc 4634
 haval
 whirlpool
-tiger-192
-tiger-128
-tiger-160
+tiger 192
+tiger 128
+tiger 160
 session key
 kerberos
 rfc 1510
@@ -410,7 +414,7 @@ rfs 5830
 rfc 6986
 rfc 7091
 ibe
-identity-based
+identity based
 weil pairing
 rfc 5091
 ibcs
@@ -429,11 +433,11 @@ skeme
 rfc 4307
 rfc 4308
 rfc 4309
-cbc-mac
+cbc mac
 esp
 rfc 4359
 rfc 4434
-aes-xcbc-orf
+aes xcbc orf
 rfc 2403
 rfc 2405
 rfc 2410
@@ -464,8 +468,8 @@ pct
 private communication technology
 set
 sepp
-s-http
-s/mime
+s http
+s mime
 rfc 2311
 rfc 2312
 ssl
@@ -522,11 +526,11 @@ rc6
 mars
 twofish
 serpent
-cast-256
+cast 256
 idea
-Triple-des
-des-ede2
-des-ede3
+Triple des
+des ede2
+des ede3
 camellia
 seed
 rc5
@@ -534,7 +538,7 @@ blowfish
 tea
 xtea
 skipjack
-shacal-2
+shacal 2
 ecb
 cbc
 cts
@@ -548,23 +552,23 @@ hmac
 gmac
 gcm
 cmac
-cbc-mac
+cbc mac
 dmac
-tow-track-mac
-sha-1
-sha-224
-sha-256
-sha-384
-sha-512
-sha-3
+tow track mac
+sha 1
+sha 224
+sha 256
+sha 384
+sha 512
+sha 3
 tiger
 whirlpool
 ripemd
 rsa
 dsa
 elgamal
-nyberg-rueppel
-rabin-williams
+nyberg rueppel
+rabin williams
 luc
 lucelg
 dlies
@@ -577,11 +581,11 @@ pssr
 emsa
 emsa5
 dh
-diffie-hellman
-menezes-qu-vanstone
+diffie hellman
+menezes qu vanstone
 mqv
 lucdif
-xtr-dh
+xtr dh
 ecdsa
 ecnr
 ecies
@@ -589,12 +593,12 @@ ecdh
 ecmqv
 arc4
 seal
-wake-ofb
+wake ofb
 desx
-des-xex3
+des xex3
 rc2
 safer
-3-way
+3 way
 gost
 shark
 cast
