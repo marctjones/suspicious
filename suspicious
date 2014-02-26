@@ -1,4 +1,8 @@
 #!/usr/bin/python
+#Author: Marc Jones <mjones@softwarefreedom.org>
+#Date: Feb 26, 2014
+#Version .1
+
 
 from optparse import OptionParser
 import os
