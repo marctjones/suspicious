@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python 
 #Author: Marc Jones <mjones@softwarefreedom.org>
 #Date: Feb 26, 2014
 #Version 0.1.1
@@ -42,6 +42,17 @@ def scorewords(report):
 				filescore[file] = 0
 			wordscore[word] += report[file][word]
 	return wordscore
+def weightreport(report, commonwords):
+	for file in report:
+		suspicious = False
+		for word in report[file]:
+			if not word in commonwords:
+				if report[file][word] > 0:
+					suspicious = True
+			if not suspicious:
+				for word in commonwords:
+					report[file].pop(word)
+	return report
 
 def scorefile(report):
 	for file in report.keys():
@@ -111,22 +122,25 @@ def scoretext(wordlist, text, maxwholewordlen = -1):
 			score[word] = len(wholeword(wordreg,text))
 	return score
 
-def optimizewordlist(wordlist, maxwholewordlength):
-	shortwordlist = list()
-	for ww in wordlist:
-		swfound = False
-		
-		for sw in wordlist:
-			if len(sw) <= maxwholewordlength:
-				continue
-			
-			if sw in ww and not sw == ww:
-				swfound = True
-				break
-
-		if not swfound:
-			shortwordlist.append(ww)
-	return shortwordlist 
+#def optimizewordlist(wordlist, maxwholewordlength):
+#	shortwordlist = list()
+#	for ww in wordlist:
+#		swfound = False
+#	 	if len(ww) >= maxwholewordlength:
+#			for sw in wordlist:
+#				if len(sw) <= maxwholewordlength:
+#					continue
+#			
+#				if sw in ww and not sw == ww:
+#					swfound = True
+#					break	
+#	
+#			if not swfound:
+#				shortwordlist.append(ww)
+#		else:
+#			shortwordlist.append(ww)
+#
+#	return shortwordlist 
 
 
 usage = "%prog [options] DIRECTORY ... DIRECTORYN"
@@ -144,13 +158,26 @@ parser.add_option("-l", "--max-wholeword-length", dest="maxwholewordlength", typ
 parser.add_option("-o", "--summary-file", dest="summaryfile", help="name of the file to store the summary in")
 parser.add_option("-x", "--display-summary", dest="displaysummary", default=False, help="Display a summary from the summary file", action="store_true")
 parser.add_option("-X", "--dont-display-summary", dest="dontdisplaysummary", default=False, help="Dont Display a summary after running a scan", action="store_true")
+parser.add_option("-k", "--commonwords", dest="commonwordfilename", help="file containing commmon words that allow do not indicate a suspicious file")
 parser.add_option("-t", "--test", dest="test", default=False, help="Run internal tests on pattern matching", action="store_true")
 
 (options, args) = parser.parse_args()
-
+if options.commonwordfilename:
+	commonwords = list(set(open(options.commonwordfilename).read().lower().strip().split('\n')))
 if options.wordlistfilename:
 	wordlist = list(set(open(options.wordlistfilename).read().lower().strip().split('\n')))
-	wordlist = optimizewordlist(wordlist, options.maxwholewordlength)
+#	uncommonwordlist = wordlist
+#	if options.commonwordfilename:
+#		for word in commonwords:
+#			if word in uncommonwordlist:
+#				uncommonwordlist.remove(word)
+	
+#	uncommonwordlist = optimizewordlist(uncommonwordlist, options.maxwholewordlength)
+
+#	if options.commonwordfilename:
+#		wordlist = list(set(uncommonwordlist + commonwords))
+#	else:
+#		wordlist = uncommonwordlist
 
 if options.show_wordlist: print wordlist; exit()
 
@@ -224,7 +251,7 @@ for file in filelist:
 	estimate = (((now - start) / (opened + skipped)) * len(filelist)) 
 	if options.display_progress: 
 		if len(file)> 60:
-			prog_file = file.split('/')[0] + "..." + file.split('/')[-1]
+			prog_file = file.split('/')[0] + "/.../" + file.split('/')[-1]
 		else:
 			prog_file = file
 		print '\r' + " " * len(progresstext) + '\r',
@@ -242,6 +269,21 @@ for file in filelist:
 if options.display_progress: 
 	print '\r' + " " * len(progresstext) + '\r',
 
+if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
+	summaryfilename = options.summaryfile	
+	counter = 0
+	while os.path.isfile(summaryfilename):
+		counter +=1
+		summaryfilename = options.summaryfile + '.' + str(counter)
+	try:
+		if counter > 1: print "saving as " + summaryfilename + "...."	
+		summaryfile = open(summaryfilename, 'w+')
+		summaryfile.write(summary(report))
+		summaryfile.close()		
+	except:
+		print report
+		print "error saving summary as " + summaryfilename
+
 if options.printreport and not options.dontdisplaysummary:
 	if options.printreport == "f":
 		printscore(sortscore(scorefile(report)))
@@ -257,20 +299,6 @@ if options.display_counts:
 	print "searched:" + str(datasize) + 'B', 
 	print "time:" + str(datetime.datetime.now() - start).split('.')[0]
 
-if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
-	summaryfilename = options.summaryfile	
-	counter = 0
-	while os.path.isfile(summaryfilename):
-		counter +=1
-		summaryfilename = options.summaryfile + '.' + str(counter)
-	try:
-		if counter > 1: print "saving as " + summaryfilename + "...."	
-		summaryfile = open(summaryfilename, 'w+')
-		summaryfile.write(summary(report))
-		summaryfile.close()		
-	except:
-		print report
-		print "error saving summary as " + summaryfilename
 
 
 def test():
