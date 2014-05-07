@@ -3,6 +3,7 @@
 #Date: Feb 26, 2014
 #Version 0.1.2
 
+#Add weight score function to remove scores from files that otherwise would not have scores
 
 from optparse import OptionParser
 import os
@@ -20,6 +21,7 @@ opened = 0
 datasize = 0
 progresstext = "" 
 
+	
 def sortscore(score, reverse=True):
 	sortedscore = sorted(score.items(), key=lambda score: score[1], reverse=reverse)
 	returnscore = []
@@ -42,16 +44,21 @@ def scorewords(report):
 				filescore[file] = 0
 			wordscore[word] += report[file][word]
 	return wordscore
+
 def weightreport(report, commonwords):
+	notsuspiciousfiles = []
 	for file in report:
 		suspicious = False
 		for word in report[file]:
 			if not word in commonwords:
 				if report[file][word] > 0:
 					suspicious = True
-			if not suspicious:
-				for word in commonwords:
-					report[file].pop(word)
+		
+		if not suspicious:
+			notsuspiciousfiles.append(file)
+	for file in notsuspiciousfiles:
+		report.pop(file)
+
 	return report
 
 def scorefile(report):
@@ -122,46 +129,72 @@ def scoretext(wordlist, text, maxwholewordlen = -1):
 			score[word] = len(wholeword(wordreg,text))
 	return score
 
-#def optimizewordlist(wordlist, maxwholewordlength):
-#	shortwordlist = list()
-#	for ww in wordlist:
-#		swfound = False
-#	 	if len(ww) >= maxwholewordlength:
-#			for sw in wordlist:
-#				if len(sw) <= maxwholewordlength:
-#					continue
-#			
-#				if sw in ww and not sw == ww:
-#					swfound = True
-#					break	
-#	
-#			if not swfound:
-#				shortwordlist.append(ww)
-#		else:
-#			shortwordlist.append(ww)
-#
-#	return shortwordlist 
-
-
 usage = "%prog [options] DIRECTORY ... DIRECTORYN"
 epilog = "example: ./suspicious ../git.lf/janitor -s .tar -s .gz -s .bmp -s .zip -s .ppt -s .docx -s .pdf -s .xls -s .xlsx -s .gif -s .png -s .jpg -s .css -r fw -w cryptology.txt -c -p -l 3"
 parser = OptionParser(usage = usage, epilog = epilog)
-parser.add_option("-f", "--file", dest="suspiciousfilename", help="specify file to scan", action="append")
-parser.add_option("-w", "--wordlist", dest="wordlistfilename", help="file containing all of the words to look for")
-parser.add_option("-s", "--skip", dest="skipfileextensions", help="file extensions to skip", action="append")
-parser.add_option("-v", "--verbose", dest="verbose", help="print verberose information", default=False, action="store_true")
-parser.add_option("-r", "--report", dest="printreport", default="wf", help="print score")
-parser.add_option("--show-wordlist", dest="show_wordlist", default=False, help="print list of words to detect", action="store_true")
-parser.add_option("-c", "--display-counts", dest="display_counts", default=False, help="Show the num ber of files processed", action="store_true")
-parser.add_option("-p", "--display_progress", dest="display_progress", default=False, help="show percentage complete", action="store_true")
-parser.add_option("-l", "--max-wholeword-length", dest="maxwholewordlength", type="int", default=-1, help="maximun length of a word allowed to only find matches on whole word")
-parser.add_option("-o", "--summary-file", dest="summaryfile", help="name of the file to store the summary in")
-parser.add_option("-x", "--display-summary", dest="displaysummary", default=False, help="Display a summary from the summary file", action="store_true")
-parser.add_option("-X", "--dont-display-summary", dest="dontdisplaysummary", default=False, help="Dont Display a summary after running a scan", action="store_true")
-parser.add_option("-k", "--commonwords", dest="commonwordfilename", help="file containing commmon words that allow do not indicate a suspicious file")
-parser.add_option("-t", "--test", dest="test", default=False, help="Run internal tests on pattern matching", action="store_true")
+parser.add_option("-f", "--file", 
+		dest="suspiciousfilename", 
+		help="specify file to scan", action="append")
+parser.add_option("-w", "--wordlist", 
+		dest="wordlistfilename", 
+		help="file containing all of the words to look for")
+parser.add_option("-s", "--skip", 
+		dest="skipfileextensions", 
+		help="file extensions to skip", 
+		action="append")
+parser.add_option("-v", "--verbose", 
+		dest="verbose", 
+		help="print verberose information", 
+		default=False, 
+		action="store_true")
+parser.add_option("-r", "--report", 
+		dest="printreport", 
+		default="wf", 
+		help="print score")
+parser.add_option("--show-wordlist", 
+		dest="show_wordlist", 
+		default=False, 
+		help="print list of words to detect", 
+		action="store_true")
+parser.add_option("-c", "--display-counts", 
+		dest="display_counts", 
+		default=False, 
+		help="Show the number of files processed", 
+		action="store_true")
+parser.add_option("-p", "--display_progress", 
+		dest="display_progress", 
+		default=False, 
+		help="show percentage complete", 
+		action="store_true")
+parser.add_option("-l", "--max-wholeword-length", 
+		dest="maxwholewordlength", 
+		type="int", 
+		default=-1, 
+		help="maximun length of a word allowed to only find matches on whole word")
+parser.add_option("-o", "--summary-file", 
+		dest="summaryfile", 
+		help="name of the file to store the summary in")
+parser.add_option("-x", "--display-summary", 
+		dest="displaysummary", 
+		default=False, 
+		help="Display a summary from the summary file", 
+		action="store_true")
+parser.add_option("-X", "--dont-display-summary", 
+		dest="dontdisplaysummary", 
+		default=False, 
+		help="Dont Display a summary after running a scan", 
+		action="store_true")
+parser.add_option("-k", "--commonwords", 
+		dest="commonwordfilename", 
+		help="file containing commmon words that allow do not indicate a suspicious file")
+parser.add_option("-t", "--test", 
+		dest="test", 
+		default=False, 
+		help="Run internal tests on pattern matching", 
+		action="store_true")
 
 (options, args) = parser.parse_args()
+
 if options.commonwordfilename:
 	commonwords = list(set(open(options.commonwordfilename).read().lower().strip().split('\n')))
 if options.wordlistfilename:
@@ -203,6 +236,8 @@ if options.displaysummary and options.summaryfile:
 			word = w[:w.find('(')]
 			wcount = w[w.find('(')+1:w.find(')')]		
 			report[filename][word] = int(wcount)
+	if options.commonwordfilename:
+		report = weightreport(report, commonwords)
 
 	if options.printreport:
 		if options.printreport == "f":
@@ -213,25 +248,24 @@ if options.displaysummary and options.summaryfile:
 			print summary(report)			
 	else:
 		print summary(report)
-	exit()
-
-
-for a in args:
-	#filelist.append(a)
-	for (path, dirs, files) in os.walk(a):
-		if 'CVS' in dirs:
-			dirs.remove('CVS')
-		if '.git' in dirs:
-			dirs.remove('.git')
-		if '.bzr' in dirs:
-			dirs.remove('.bzr')
-		if '.hg' in dirs:
-			dirs.remove('.hg')
-		if '.svn' in dirs:
-			dirs.remove('.svn')
 	
-		for file in files:
-			filelist.append(path + '/' + file)
+	exit()
+if len(args) > 0:
+	for a in args:
+		for (path, dirs, files) in os.walk(a):
+			if 'CVS' in dirs:
+				dirs.remove('CVS')
+			if '.git' in dirs:
+				dirs.remove('.git')
+			if '.bzr' in dirs:
+				dirs.remove('.bzr')
+			if '.hg' in dirs:
+				dirs.remove('.hg')
+			if '.svn' in dirs:
+				dirs.remove('.svn')
+	
+			for file in files:
+				filelist.append(path + '/' + file)
 	
 if options.suspiciousfilename:
 	filelist += options.suspiciousfilename
@@ -298,23 +332,3 @@ if options.display_counts:
 	print "skipped files:" + str(skipped) ,
 	print "searched:" + str(datasize) + 'B', 
 	print "time:" + str(datetime.datetime.now() - start).split('.')[0]
-
-
-
-def test():
-	print wholeword("22", "port22")
-	print wholeword("22", "22")
-	print wholeword("22", ":22'")
-	print wholeword("22", "223")	
-	print wholeword("22", "open('22')")
-	print wholeword("ear","bearth")
-	print wholeword("ear","BearTH")
-	print wholeword("ear","bEARth")
-	print wholeword("ear","ear_")
-	print wholeword("ear","ear()")
-	print wholeword("ear","ear.")
-	print wholeword("ear","ear:")
-	print wholeword("ear","ear\n\r")
-	print wholeword("ear","myEAR() MYear: myEAR()")
-	print wholeword("a5.[0123456789]0","a5-9")
-#test()
