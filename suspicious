@@ -1,10 +1,30 @@
-#!/usr/bin/python 
+#!/usr/bin/python
+
+# Copyright 2014 Software Freedom Law Center (www.softwarefreedom.org)
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #Author: Marc Jones <mjones@softwarefreedom.org>
-#Date: Feb 26, 2014
-#Version 0.1.2
+#Date: June 30, 2014
+#Version 0.2.1
+#Added weight score function to remove scores from files that otherwise would not have scores
+#Added Remove superstrings of other words from search to speed things up if they are greater than wordlength
 
-#Add weight score function to remove scores from files that otherwise would not have scores
-
+##TODO
+#need to verify that word score counts each instance, not just 0 or 1
+#need to discount found words if they are substrings of common strings in text
+ 
 from optparse import OptionParser
 import os
 import re
@@ -47,19 +67,24 @@ def scorewords(report):
 
 def weightreport(report, commonwords):
 	notsuspiciousfiles = []
+        weightedout = 0
 	for file in report:
 		suspicious = False
+		filescore = 0
 		for word in report[file]:
-			if not word in commonwords:
-				if report[file][word] > 0:
-					suspicious = True
-		
-		if not suspicious:
-			notsuspiciousfiles.append(file)
+		        filescore += report[file][word]
+		if filescore > 0:
+		        for word in report[file]:
+		                if report[file][word] > 0 and not word in commonwords:
+			                suspicious = True
+		if not suspicious and filescore > 0:
+		        notsuspiciousfiles.append(file)
+
 	for file in notsuspiciousfiles:
 		report.pop(file)
+                weightedout +=1
 
-	return report
+	return report, weightedout
 
 def scorefile(report):
 	for file in report.keys():
@@ -192,25 +217,33 @@ parser.add_option("-t", "--test",
 		default=False, 
 		help="Run internal tests on pattern matching", 
 		action="store_true")
+parser.add_option("--donotoptimizewordlist",
+                dest="optimizewordlist",
+                default=True,
+                help="Reduce the number of words to look for by removing words from the wordlist that contain other words on the list as substrings",
+                action="store_false")
+parser.add_option("--dontweightreport",
+                dest="dontweightreport",
+                default=False,
+                help="If the only suspicious words in a file are common words, remove the file from the report",
+                action="store_true")
 
 (options, args) = parser.parse_args()
 
-if options.commonwordfilename:
-	commonwords = list(set(open(options.commonwordfilename).read().lower().strip().split('\n')))
 if options.wordlistfilename:
 	wordlist = list(set(open(options.wordlistfilename).read().lower().strip().split('\n')))
-#	uncommonwordlist = wordlist
-#	if options.commonwordfilename:
-#		for word in commonwords:
-#			if word in uncommonwordlist:
-#				uncommonwordlist.remove(word)
-	
-#	uncommonwordlist = optimizewordlist(uncommonwordlist, options.maxwholewordlength)
 
-#	if options.commonwordfilename:
-#		wordlist = list(set(uncommonwordlist + commonwords))
-#	else:
-#		wordlist = uncommonwordlist
+if options.commonwordfilename:
+	commonwords = list(set(open(options.commonwordfilename).read().lower().strip().split('\n')))
+	
+if options.optimizewordlist and options.wordlistfilename:
+    for word in wordlist:
+        if len(word) > options.maxwholewordlength:
+            for check_word in wordlist:
+                if check_word.find(word)> 0:
+#                    print word + " in " + check_word
+                    wordlist.remove(check_word)
+                    break
 
 if options.show_wordlist: print wordlist; exit()
 
@@ -236,8 +269,9 @@ if options.displaysummary and options.summaryfile:
 			word = w[:w.find('(')]
 			wcount = w[w.find('(')+1:w.find(')')]		
 			report[filename][word] = int(wcount)
-	if options.commonwordfilename:
-		report = weightreport(report, commonwords)
+
+	if options.commonwordfilename and not(options.dontweightreport):
+		report, weightedfiles = weightreport(report, commonwords)
 
 	if options.printreport:
 		if options.printreport == "f":
@@ -250,6 +284,8 @@ if options.displaysummary and options.summaryfile:
 		print summary(report)
 	
 	exit()
+
+#Run a serarch if not displaying a existing report
 if len(args) > 0:
 	for a in args:
 		for (path, dirs, files) in os.walk(a):
@@ -300,9 +336,11 @@ for file in filelist:
 	for k in filecontentsscore.keys():
 		report[file][k] = filenamescore[k] + filecontentsscore[k]
 
+#Clear screen of proggress text now that finished scoring file
 if options.display_progress: 
 	print '\r' + " " * len(progresstext) + '\r',
 
+#Save summary as a file, but if the filename exists do not overwrite, append a number
 if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
 	summaryfilename = options.summaryfile	
 	counter = 0
@@ -318,6 +356,9 @@ if options.summaryfile and len(filelist) > 0 and not options.displaysummary:
 		print report
 		print "error saving summary as " + summaryfilename
 
+if options.commonwordfilename and not(options.dontweightreport):
+	report, weightedfiles = weightreport(report, commonwords)
+        
 if options.printreport and not options.dontdisplaysummary:
 	if options.printreport == "f":
 		printscore(sortscore(scorefile(report)))
@@ -329,6 +370,8 @@ if options.printreport and not options.dontdisplaysummary:
 if options.display_counts:
 	print "total files:" + str(len(filelist)) ,
 	print "suspicious files:" + str(len(sortscore(scorefile(report)))) ,
-	print "skipped files:" + str(skipped) ,
+	print "skipped files:" + str(skipped),
+	if options.commonwordfilename and not(options.dontweightreport):
+		print "removed weighted files:" + str(weightedfiles),
 	print "searched:" + str(datasize) + 'B', 
 	print "time:" + str(datetime.datetime.now() - start).split('.')[0]
