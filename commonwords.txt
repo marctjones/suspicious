@@ -1,0 +1,12 @@
+magenta
+password
+auth
+url
+22
+http
+url
+idea
+set
+key
+export
+drm
