@@ -155,7 +155,7 @@ def scoretext(wordlist, text, maxwholewordlen = -1):
 	return score
 
 usage = "%prog [options] DIRECTORY ... DIRECTORYN"
-epilog = "example: ./suspicious ../git.lf/janitor -s .tar -s .gz -s .bmp -s .zip -s .ppt -s .docx -s .pdf -s .xls -s .xlsx -s .gif -s .png -s .jpg -s .css -r fw -w cryptology.txt -c -p -l 3"
+epilog = "example: ./suspicious ../gitcheckout -s .tar -s .gz -s .bmp -s .zip -s .ppt -s .docx -s .pdf -s .xls -s .xlsx -s .gif -s .png -s .jpg -s .css -r fw -w cryptology.txt -c -p -l 3"
 parser = OptionParser(usage = usage, epilog = epilog)
 parser.add_option("-f", "--file", 
 		dest="suspiciousfilename", 
